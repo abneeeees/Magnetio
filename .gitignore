@@ -1,0 +1,16 @@
+# build output
+build/
+out/
+*.o
+
+# binaries
+main
+app
+
+# editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+
+# logs
+*.log
