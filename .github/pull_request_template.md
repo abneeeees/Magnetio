@@ -1,5 +1,5 @@
 ### Description
-<!-- Briefly describe what this PR does and why it’s needed. -->
+<!-- What this PR does and why it’s needed. -->
 
 ### Related Issue
 <!-- Reference the issue related to this PR -->
