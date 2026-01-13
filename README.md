@@ -40,5 +40,5 @@ make or make all
 
 ### Running
 ```bash
-
+./Magnetio
 ```
