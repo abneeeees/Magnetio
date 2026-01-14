@@ -67,6 +67,12 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
+Magnetio
 
 ## vscode
 .vscode
+
+##files
+gui
+magnet
+main

@@ -1,5 +1,6 @@
-#include "../include/gui.h"
+#include <gui.h>
 
+// function to define functio
 static GtkWidget* SearchPage(Appdata *data) {
   return gtk_label_new("Search");
 }
@@ -19,14 +20,14 @@ static GtkWidget* DownloadPage(Appdata *data) {
   return gtk_label_new("Download");
 }
 
-static void Clicked(GtkButton *button, gpointer user_data) {
+void Clicked(GtkButton *button, gpointer user_data) {
     Appdata *data = user_data;
     const char *page = gtk_widget_get_name(GTK_WIDGET(button));
 
     gtk_stack_set_visible_child_name(GTK_STACK(data->stack), page);
 }
 
-static void app_activate(GApplication *app, gpointer user_data){
+void app_activate(GApplication *app, gpointer user_data){
   Appdata *data = user_data;
 
     // ======= Main Window ======= //c
@@ -88,17 +89,4 @@ static void app_activate(GApplication *app, gpointer user_data){
   g_signal_connect(search, "clicked", G_CALLBACK(Clicked), data);
   
   gtk_window_present(GTK_WINDOW(data->window));
-}
-
-int main(int argc, char *argv[]){
-  GtkApplication *app;
-  int status;
-
-  app = gtk_application_new("com.gnome.MyApp", G_APPLICATION_DEFAULT_FLAGS);
-  Appdata *data = g_new0(Appdata, 1);
-  g_signal_connect(app,"activate", G_CALLBACK(app_activate), data);
-  status = g_application_run(G_APPLICATION(app), argc, argv);
-
-  g_object_unref(app);
-  return status;
 }

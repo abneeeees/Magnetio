@@ -12,18 +12,18 @@
 
 ### Project Structure
 ```bash
+├── .github
 ├── CMakeLists.txt
 ├── include
 │   ├── gui.h
 │   ├── magnet.h
 │   └── main.h
 ├── README.md
+├── LICENSE
 └── src
-    ├── gui
     ├── gui.c
     ├── magnet.c
     └── main.c
-
 ```
 ### Building & Running
 - `gtk` Graphics, input and audio
@@ -38,7 +38,9 @@ cmake ..
 make or make all
 ```
 
-### Running
+### Running & Cleaning
 ```bash
-./Magnetio
+./Magnetio //running
+
+make clean //cleaning
 ```
