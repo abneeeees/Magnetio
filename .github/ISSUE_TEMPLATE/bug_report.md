@@ -28,6 +28,11 @@ assignees: abneeeees
 ### Proposed Solution (optional)
 <!-- If you have an idea of how this could be fixed, describe it here. -->
 
+### Additional note
+<!-- Docs related to the fix the bug -->
+<!-- Files or Functions in which bug is found -->
+<!-- Similar bug for reference -->
+
 ---
 ### Willingness to Contribute
 - [ ] I am willing to work on fixing this bug.

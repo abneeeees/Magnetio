@@ -17,6 +17,11 @@ assignees: abneeeees
 ### Describe the Proposed Solution
 <!-- Explain what you want to happen. -->
 
+### Additional note
+<!-- Docs related to the issue -->
+<!-- Files and functions in which issue can be solved or creation of a new file -->
+<!-- Similar feature for reference -->
+
 ---
 ### Willingness to Contribute
 - [ ] I am willing to work on implementing this feature
