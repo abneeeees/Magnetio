@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 4.2.1)
 project(Magnetio VERSION 1.0.0 LANGUAGES C)
 
-set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-
+add_compile_options(-Wall -Wextra)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK4 REQUIRED IMPORTED_TARGET gtk4)
 
