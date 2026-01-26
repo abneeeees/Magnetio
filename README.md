@@ -1,11 +1,11 @@
 ## Magnetio
  - Magnetio is a streaming, downloading and playing platform for magnet links.
  - Its a minimal version inspired by [stremio](https://www.stremio.com/)
-  
+
 ---
 
 ### Features
- - It allows users to 
+ - It allows users to
    - Stream videos using magnet links.
    - Download media using magnet links.
    - Search for magent links of desired choice.
@@ -35,12 +35,11 @@ git clone https://github.com/abneeeees/Magnetio
 cd Magnetio
 mkdir build && cd build
 cmake ..
-make or make all
+make #use "make clean" to clean build files in case outdated
 ```
 
 ### Running & Cleaning
 ```bash
-./Magnetio //running
-
-make clean //cleaning
+./Magnetio
+make clean # cleans the build, to run next time you have to build again
 ```
