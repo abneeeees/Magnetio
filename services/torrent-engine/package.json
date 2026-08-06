@@ -1,0 +1,20 @@
+{
+  "name": "@magnetio/torrent-engine",
+  "version": "0.0.1",
+  "private": true,
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@magnetio/torrent-engine": "workspace:*",
+    "bencode": "^4.0.1",
+    "webtorrent": "^3.0.21"
+  },
+  "devDependencies": {
+    "@types/bencode": "^4.0.0",
+    "@types/bun": "latest"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@magnetio/shared",
+  "version": "0.0.1",
+  "private": true,
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

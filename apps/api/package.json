@@ -1,0 +1,20 @@
+{
+  "name": "@magnetio/api",
+  "version": "0.0.1",
+  "private": true,
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4",
+    "@magnetio/shared": "workspace:*",
+    "@magnetio/torrent-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

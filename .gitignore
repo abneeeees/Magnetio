@@ -1,0 +1,41 @@
+# dependencies
+node_modules
+
+# build output
+dist
+out
+*.tsbuildinfo
+
+# turbo
+.turbo
+
+# next.js
+.next
+!.next/standalone
+
+# env files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+logs/
+
+# coverage
+coverage
+*.lcov
+
+# misc
+*.tgz
+.cache
