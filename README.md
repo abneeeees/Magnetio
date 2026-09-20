@@ -4,6 +4,19 @@ Magnetio is a lightweight, peer-to-peer web media streaming platform for movies 
 
 ---
 
+## Screenshots
+### Homepage
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/87b5815e-cd83-4a68-bedc-c880e929ec5a" />
+
+### Global Search 
+<img width="1852" height="893" alt="image" src="https://github.com/user-attachments/assets/10b1ece8-26c4-49ec-866b-73c311333ee4" />
+
+### Streams
+<img width="766" height="1009" alt="image" src="https://github.com/user-attachments/assets/0c709cb9-4929-4d81-b106-d6aefc15ea82" />
+
+
+---
+
 ## Project Structure
 
 ```text
@@ -53,7 +66,7 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:3000 bun run dev
 ## Run with Docker
 
 ```bash
-sudo docker compose up --build
+sudo docker compose up -d --build
 ```
 
 - Backend exposed on **`3000:3000`**
