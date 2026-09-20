@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+
+    ports:
+      - "3000:3000"
+
+    volumes:
+      - ./backend:/app:z
+      - backend_node_modules:/app/node_modules
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+
+    ports:
+      - "3001:3001"
+
+    volumes:
+      - ./frontend:/app:z
+      - frontend_node_modules:/app/node_modules
+
+    depends_on:
+      - backend
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:
