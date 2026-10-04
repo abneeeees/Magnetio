@@ -1,6 +1,6 @@
 # Magnetio
 
-Magnetio is a lightweight, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser using sequential BitTorrent chunking and HTTP 206 Partial Content range requests.
+Magnetio is a **Self-hosting**, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser using sequential BitTorrent chunking and HTTP 206 Partial Content range requests.
 
 ---
 
