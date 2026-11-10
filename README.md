@@ -6,6 +6,10 @@
 
 <p align="center">Magnetio is a lightweight, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser.</p>
 
+<p align="center">
+  <img src="assets/magnetio.png" alt="Magnetio logo" width="741" />
+</p>
+
 ---
 
 ## Project Structure
