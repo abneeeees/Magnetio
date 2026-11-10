@@ -72,3 +72,23 @@ export function parseStreamTitle(title: string): ParsedStreamInfo {
     rawTitle: header || sub || title,
   };
 }
+
+export interface SeriesEpisode {
+  episodeNumber: number;
+  name: string;
+}
+
+export interface SeriesSeason {
+  seasonNumber: number;
+  name: string;
+  episodeCount: number;
+  episodes: SeriesEpisode[];
+}
+
+export interface SeriesDetails {
+  id: string;
+  name: string;
+  totalSeasons: number;
+  totalEpisodes: number;
+  seasons: SeriesSeason[];
+}

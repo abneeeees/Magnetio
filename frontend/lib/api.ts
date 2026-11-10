@@ -1,9 +1,17 @@
-import { MediaItem, TorrentStream } from "@/types";
+import { MediaItem, SeriesDetails, SeriesSeason, TorrentStream } from "@/types";
 
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
 const CINEMETA_TOP_MOVIES = "https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json";
 const CINEMETA_TOP_SERIES = "https://cinemeta-catalogs.strem.io/top/catalog/series/top.json";
+const CINEMETA_META_SERIES = "https://v3-cinemeta.strem.io/meta/series";
+
+interface CinemetaVideo {
+  name?: string;
+  season?: number | string;
+  number?: number | string;
+  episode?: number | string;
+}
 
 export async function fetchPopularMedia(type: "movie" | "series" = "movie"): Promise<MediaItem[]> {
   const url = type === "movie" ? CINEMETA_TOP_MOVIES : CINEMETA_TOP_SERIES;
@@ -96,7 +104,8 @@ export async function fetchStreams(
   season?: number,
   episode?: number,
 ): Promise<TorrentStream[]> {
-  const mediaId = type === "series" && season && episode ? `${id}:${season}:${episode}` : id;
+  const mediaId =
+    type === "series" && season != null && episode != null ? `${id}:${season}:${episode}` : id;
 
   const res = await fetch(`${BACKEND_URL}/metadata/${type}/${mediaId}`);
   if (!res.ok) {
@@ -208,4 +217,70 @@ export async function removeFromWatchlist(token: string, mediaId: string) {
   });
   if (!res.ok) throw new Error(await readApiError(res, "Failed to remove from watchlist"));
   return res.json();
+}
+
+export async function getSeriesDetails(mediaId: string): Promise<SeriesDetails> {
+  const response = await fetch(`${CINEMETA_META_SERIES}/${encodeURIComponent(mediaId)}.json`, {
+    next: { revalidate: 3600 },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch series details (${response.status})`);
+  }
+
+  const data = await response.json();
+  const meta = data?.meta;
+  const videos: CinemetaVideo[] = Array.isArray(meta?.videos) ? meta.videos : [];
+
+  if (!meta || videos.length === 0) {
+    throw new Error("No season or episode information is available for this series.");
+  }
+
+  const seasonsByNumber = new Map<number, SeriesSeason>();
+
+  for (const video of videos) {
+    const seasonNumber = Number(video.season);
+    const episodeNumber = Number(video.episode ?? video.number);
+
+    if (!Number.isFinite(seasonNumber) || !Number.isFinite(episodeNumber)) continue;
+
+    let season = seasonsByNumber.get(seasonNumber);
+    if (!season) {
+      season = {
+        seasonNumber,
+        name: seasonNumber === 0 ? "Specials" : `Season ${seasonNumber}`,
+        episodeCount: 0,
+        episodes: [],
+      };
+      seasonsByNumber.set(seasonNumber, season);
+    }
+
+    if (season.episodes.some((episode) => episode.episodeNumber === episodeNumber)) continue;
+
+    season.episodes.push({
+      episodeNumber,
+      name: video.name?.trim() || `Episode ${episodeNumber}`,
+    });
+  }
+
+  const seasons = [...seasonsByNumber.values()]
+    .sort((a, b) => a.seasonNumber - b.seasonNumber)
+    .map((season) => {
+      const episodes = season.episodes.sort((a, b) => a.episodeNumber - b.episodeNumber);
+      return { ...season, episodes, episodeCount: episodes.length };
+    });
+
+  if (seasons.length === 0) {
+    throw new Error("No season or episode information is available for this series.");
+  }
+
+  const regularSeasons = seasons.filter((season) => season.seasonNumber > 0);
+
+  return {
+    id: String(meta.imdb_id || meta.id || mediaId),
+    name: meta.name || mediaId,
+    totalSeasons: regularSeasons.length,
+    totalEpisodes: regularSeasons.reduce((total, season) => total + season.episodeCount, 0),
+    seasons,
+  };
 }

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { MediaItem, TorrentStream, parseStreamTitle } from "@/types";
-import { fetchStreams } from "@/lib/api";
+import { MediaItem, SeriesDetails, TorrentStream, parseStreamTitle } from "@/types";
+import { fetchStreams, getSeriesDetails } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import {
   X,
@@ -37,6 +37,18 @@ interface StreamSelectorModalProps {
   ) => void;
 }
 
+function getSelectableSeasons(details: SeriesDetails | null) {
+  if (!details) return [];
+
+  // Season 0 holds specials. Only include it when the series has no regular seasons.
+  const regularSeasons = details.seasons.filter((season) => season.seasonNumber > 0);
+  return regularSeasons.length > 0 ? regularSeasons : details.seasons;
+}
+
+function getEpisodesForSeason(details: SeriesDetails | null, seasonNumber: number) {
+  return details?.seasons.find((season) => season.seasonNumber === seasonNumber)?.episodes ?? [];
+}
+
 export function StreamSelectorModal({
   item,
   onClose,
@@ -48,6 +60,9 @@ export function StreamSelectorModal({
   const { user } = useAuth();
   const [season, setSeason] = useState<number>(1);
   const [episode, setEpisode] = useState<number>(1);
+  const [seriesDetails, setSeriesDetails] = useState<SeriesDetails | null>(null);
+  const [seriesLoading, setSeriesLoading] = useState<boolean>(item.type === "series");
+  const [seriesError, setSeriesError] = useState<string | null>(null);
   const [streams, setStreams] = useState<TorrentStream[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,28 +83,84 @@ export function StreamSelectorModal({
     });
 
   useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    setError(null);
+    if (item.type !== "series") return;
 
-    fetchStreams(item.type, item.id, season, episode)
-      .then((data) => {
-        if (isMounted) {
-          setStreams(data);
-          setLoading(false);
+    let cancelled = false;
+
+    const loadSeriesDetails = async () => {
+      setSeriesDetails(null);
+      setSeriesError(null);
+      setSeriesLoading(true);
+      setStreams([]);
+      setLoading(true);
+
+      try {
+        const details = await getSeriesDetails(item.id);
+        if (cancelled) return;
+
+        setSeriesDetails(details);
+
+        const firstSeason = getSelectableSeasons(details)[0];
+        if (firstSeason) {
+          setSeason(firstSeason.seasonNumber);
+          setEpisode(firstSeason.episodes[0]?.episodeNumber ?? 1);
         }
-      })
-      .catch((err) => {
-        if (isMounted) {
-          setError(err.message || "Failed to load streams from backend.");
-          setLoading(false);
-        }
-      });
+
+        setSeriesLoading(false);
+      } catch (err) {
+        if (cancelled) return;
+
+        console.error("Failed to load series details:", err);
+        setSeriesError(
+          err instanceof Error ? err.message : "Failed to load season and episode information.",
+        );
+        setSeriesLoading(false);
+      }
+    };
+
+    void loadSeriesDetails();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [item.id, item.type]);
+
+  const waitingForSeriesInfo = item.type === "series" && seriesLoading;
+
+  useEffect(() => {
+    if (waitingForSeriesInfo) return;
+
+    let isMounted = true;
+
+    const loadStreams = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchStreams(
+          item.type,
+          item.id,
+          item.type === "series" ? season : undefined,
+          item.type === "series" ? episode : undefined,
+        );
+        if (!isMounted) return;
+
+        setStreams(data);
+        setLoading(false);
+      } catch (err) {
+        if (!isMounted) return;
+
+        setError(err instanceof Error ? err.message : "Failed to load streams from backend.");
+        setLoading(false);
+      }
+    };
+
+    void loadStreams();
 
     return () => {
       isMounted = false;
     };
-  }, [item.id, item.type, season, episode]);
+  }, [item.id, item.type, season, episode, waitingForSeriesInfo]);
 
   const toggleWatchlist = async () => {
     if (!user) {
@@ -115,6 +186,15 @@ export function StreamSelectorModal({
     navigator.clipboard.writeText(magnet);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const selectableSeasons = getSelectableSeasons(seriesDetails);
+  const episodesForSeason = getEpisodesForSeason(seriesDetails, season);
+
+  const handleSeasonChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const nextSeason = Number(event.target.value);
+    setSeason(nextSeason);
+    setEpisode(getEpisodesForSeason(seriesDetails, nextSeason)[0]?.episodeNumber ?? 1);
   };
 
   return (
@@ -189,38 +269,80 @@ export function StreamSelectorModal({
 
         {/* TV Series Season / Episode Selector */}
         {item.type === "series" && (
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#1b202e] bg-[#121622] px-3 py-3 sm:px-6">
-            <div className="grid grid-cols-2 gap-3">
-              {/* Season Selector */}
-              <div className="flex flex-col gap-1.5">
-                <select
-                  value={season}
-                  onChange={(e) => setSeason(Number(e.target.value))}
-                  className="w-full cursor-pointer appearance-none rounded-lg border border-[#252c40] bg-[#171c2b] px-3 py-2.5 text-sm text-white transition outline-none hover:border-[#3b455e] focus:border-red-500"
-                >
-                  {Array.from({ length: 50 }, (_, i) => i + 1).map((s) => (
-                    <option key={s} value={s}>
-                      Season {s}
-                    </option>
-                  ))}
-                </select>
+          <div className="border-b border-[#1b202e] bg-[#121622] px-3 py-3 sm:px-6">
+            {seriesLoading ? (
+              <div className="flex items-center gap-2 text-xs text-[#737c92]">
+                <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                Loading seasons and episodes...
               </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {seriesError && (
+                  <div className="flex items-center gap-2 text-xs text-amber-400">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>{seriesError} Using manual season and episode selection.</span>
+                  </div>
+                )}
 
-              {/* Episode Selector */}
-              <div className="flex flex-col gap-1.5">
-                <select
-                  value={episode}
-                  onChange={(e) => setEpisode(Number(e.target.value))}
-                  className="w-full cursor-pointer appearance-none rounded-lg border border-[#252c40] bg-[#171c2b] px-3 py-2.5 text-sm text-white transition outline-none hover:border-[#3b455e] focus:border-red-500"
-                >
-                  {Array.from({ length: 100 }, (_, i) => i + 1).map((ep) => (
-                    <option key={ep} value={ep}>
-                      Episode {ep}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Season Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="season-select"
+                      className="text-[11px] font-medium tracking-wide text-[#737c92] uppercase"
+                    >
+                      Season
+                    </label>
+                    <select
+                      id="season-select"
+                      value={season}
+                      onChange={handleSeasonChange}
+                      className="w-full cursor-pointer appearance-none rounded-lg border border-[#252c40] bg-[#171c2b] px-3 py-2.5 text-sm text-white transition outline-none hover:border-[#3b455e] focus:border-red-500"
+                    >
+                      {selectableSeasons.length > 0
+                        ? selectableSeasons.map((s) => (
+                            <option key={s.seasonNumber} value={s.seasonNumber}>
+                              {s.name}
+                            </option>
+                          ))
+                        : Array.from({ length: 50 }, (_, i) => i + 1).map((s) => (
+                            <option key={s} value={s}>
+                              Season {s}
+                            </option>
+                          ))}
+                    </select>
+                  </div>
+
+                  {/* Episode Selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="episode-select"
+                      className="text-[11px] font-medium tracking-wide text-[#737c92] uppercase"
+                    >
+                      Episode
+                    </label>
+                    <select
+                      id="episode-select"
+                      value={episode}
+                      onChange={(e) => setEpisode(Number(e.target.value))}
+                      className="w-full cursor-pointer appearance-none rounded-lg border border-[#252c40] bg-[#171c2b] px-3 py-2.5 text-sm text-white transition outline-none hover:border-[#3b455e] focus:border-red-500"
+                    >
+                      {episodesForSeason.length > 0
+                        ? episodesForSeason.map((ep) => (
+                            <option key={ep.episodeNumber} value={ep.episodeNumber}>
+                              Episode {ep.episodeNumber} — {ep.name}
+                            </option>
+                          ))
+                        : Array.from({ length: 100 }, (_, i) => i + 1).map((ep) => (
+                            <option key={ep} value={ep}>
+                              Episode {ep}
+                            </option>
+                          ))}
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -283,8 +405,8 @@ export function StreamSelectorModal({
                         mediaId: item.id,
                         title: item.name,
                         mediaType: item.type,
-                        seasonNum: item.type === "series" ? season : 1,
-                        episodeNum: item.type === "series" ? episode : 1,
+                        seasonNum: item.type === "series" ? season : undefined,
+                        episodeNum: item.type === "series" ? episode : undefined,
                         posterUrl: item.poster,
                       })
                     }
