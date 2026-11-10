@@ -52,8 +52,20 @@ export function StreamSelectorModal({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [selectedQuality, setSelectedQuality] = useState<string | null>(null);
   const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
+
+  const qualityFilters = ["4K", "1080p", "720p", "HD"];
+
+  const filteredStreams = streams
+    .map((stream, index) => ({ stream, index, info: parseStreamTitle(stream.title) }))
+    .filter(({ info }) => {
+      if (Number(info.seeders) <= 50 || !Number.isFinite(Number(info.seeders))) return false;
+      if (!selectedQuality) return true;
+      if (selectedQuality === "HD") return info.quality === "HD" || info.quality === "480p";
+      return info.quality === selectedQuality;
+    });
 
   useEffect(() => {
     let isMounted = true;
@@ -178,35 +190,9 @@ export function StreamSelectorModal({
         {/* TV Series Season / Episode Selector */}
         {item.type === "series" && (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-[#1b202e] bg-[#121622] px-3 py-3 sm:px-6">
-            {/* <div className="flex items-center gap-2">
-              <label className="text-xs font-medium text-[#7d869b]">Season</label>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                value={season}
-                onChange={(e) => setSeason(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-16 rounded border border-[#252c40] bg-[#171c2b] px-2.5 py-1 text-xs text-white focus:border-red-500 focus:outline-none"
-              />
-            </div> */}
-            {/* <div className="flex items-center gap-2">
-              <label className="text-xs font-medium text-[#7d869b]">Episode</label>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                value={episode}
-                onChange={(e) => setEpisode(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-16 rounded border border-[#252c40] bg-[#171c2b] px-2.5 py-1 text-xs text-white focus:border-red-500 focus:outline-none"
-              />
-            </div> */}
-
             <div className="grid grid-cols-2 gap-3">
               {/* Season Selector */}
               <div className="flex flex-col gap-1.5">
-                {/* <label className="text-xs font-medium text-[#7d869b]">
-                  Season
-                </label> */}
                 <select
                   value={season}
                   onChange={(e) => setSeason(Number(e.target.value))}
@@ -222,9 +208,6 @@ export function StreamSelectorModal({
 
               {/* Episode Selector */}
               <div className="flex flex-col gap-1.5">
-                {/* <label className="text-xs font-medium text-[#7d869b]">
-                  Episode
-                </label> */}
                 <select
                   value={episode}
                   onChange={(e) => setEpisode(Number(e.target.value))}
@@ -245,9 +228,31 @@ export function StreamSelectorModal({
         <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-6">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-xs font-semibold tracking-wider text-[#737c92] uppercase">
-              Available Streams {streams.length > 0 && `(${streams.length})`}
+              Available Streams {filteredStreams.length > 0 && `(${filteredStreams.length})`}
             </h3>
           </div>
+
+          {!loading && !error && streams.length > 0 && (
+            <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-lg border border-[#252c40] bg-[#171c2b]">
+              {qualityFilters.map((quality, index) => (
+                <button
+                  key={quality}
+                  type="button"
+                  aria-pressed={selectedQuality === quality}
+                  onClick={() => setSelectedQuality(selectedQuality === quality ? null : quality)}
+                  className={`border-[#252c40] px-3 py-2 text-xs font-medium transition-colors sm:text-sm ${
+                    index > 0 ? "border-l" : ""
+                  } ${
+                    selectedQuality === quality
+                      ? "bg-red-500/10 text-red-400"
+                      : "text-[#8e98ae] hover:bg-[#1f2639] hover:text-white"
+                  }`}
+                >
+                  {quality}
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 text-[#737c92]">
@@ -265,85 +270,75 @@ export function StreamSelectorModal({
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {streams.map((stream, idx) => {
-                const info = parseStreamTitle(stream.title);
-                return (
+              {filteredStreams.length === 0 ? (
+                <div className="py-12 text-center text-xs text-[#737c92]">
+                  No streams with more than 50 seeders are available in this quality.
+                </div>
+              ) : (
+                filteredStreams.map(({ stream, index, info }) => (
                   <div
-                    key={stream.infoHash + idx}
+                    key={stream.infoHash + index}
                     onClick={() =>
                       onPlayStream(stream, `${item.name} (${info.quality})`, {
                         mediaId: item.id,
                         title: item.name,
                         mediaType: item.type,
-                        seasonNum: item.type === "series" ? season : undefined,
-                        episodeNum: item.type === "series" ? episode : undefined,
+                        seasonNum: item.type === "series" ? season : 1,
+                        episodeNum: item.type === "series" ? episode : 1,
                         posterUrl: item.poster,
                       })
                     }
                     className="group flex cursor-pointer flex-col items-stretch gap-3 rounded-lg border border-[#1c2232] bg-[#131722] p-3 transition-all hover:border-red-500/40 hover:bg-[#181d2c] sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-3.5"
                   >
-                    <div className="flex min-w-0 items-center gap-3 sm:flex-1">
-                      {/* Quality Badge */}
-                      <span
-                        className={`flex-shrink-0 rounded px-2 py-1 font-mono text-[11px] font-bold ${
-                          info.quality === "4K"
-                            ? "border border-purple-800/40 bg-purple-950/80 text-purple-300"
-                            : info.quality === "1080p"
-                              ? "border border-blue-800/40 bg-blue-950/80 text-blue-300"
-                              : "bg-zinc-800 text-zinc-300"
-                        }`}
-                      >
-                        {info.quality}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate text-xs font-medium text-[#dce0ea] transition-colors group-hover:text-red-400">
+                        {info.rawTitle}
                       </span>
-
-                      {/* Stream Title & Details */}
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate text-xs font-medium text-[#dce0ea] transition-colors group-hover:text-red-400">
-                          {info.rawTitle}
-                        </span>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6b758b]">
-                          {info.size !== "—" && (
-                            <span className="flex items-center gap-1">
-                              <HardDrive className="h-3 w-3" />
-                              {info.size}
-                            </span>
-                          )}
-                          {info.seeders !== "—" && (
-                            <span className="flex items-center gap-1 text-emerald-400">
-                              <Users className="h-3 w-3" />
-                              {info.seeders} seeds
-                            </span>
-                          )}
-                          <span className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#fffff] backdrop-blur-sm">
-                            {info.provider}
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#6b758b]">
+                        {info.size !== "—" && (
+                          <span className="flex items-center gap-1">
+                            <HardDrive className="h-3 w-3" />
+                            {info.size}
                           </span>
-                        </div>
+                        )}
+                        {info.seeders !== "—" && (
+                          <span className="flex items-center gap-1 text-emerald-400">
+                            <Users className="h-3 w-3" />
+                            {info.seeders} seeds
+                          </span>
+                        )}
+                        <span className="rounded bg-black/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-[#fffff] backdrop-blur-sm">
+                          {info.provider}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Actions */}
                     <div className="flex w-full flex-shrink-0 items-center justify-end gap-2 sm:w-auto">
                       <button
                         type="button"
-                        title="Copy Magnet Link"
-                        onClick={(e) => handleCopyMagnet(stream.magnet, idx, e)}
+                        title="Copy magnet link"
+                        aria-label="Copy magnet link"
+                        onClick={(e) => handleCopyMagnet(stream.magnet, index, e)}
                         className="rounded-lg p-2 text-[#60697f] transition-colors hover:bg-[#20273a] hover:text-white"
                       >
-                        {copiedIndex === idx ? (
+                        {copiedIndex === index ? (
                           <Check className="h-4 w-4 text-emerald-400" />
                         ) : (
                           <Copy className="h-4 w-4" />
                         )}
                       </button>
 
-                      <button className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all group-hover:bg-red-500">
+                      <button
+                        type="button"
+                        className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all group-hover:bg-red-500"
+                      >
                         <Play className="h-3.5 w-3.5 fill-current" />
                         Play
                       </button>
                     </div>
                   </div>
-                );
-              })}
+                ))
+              )}
             </div>
           )}
         </div>
