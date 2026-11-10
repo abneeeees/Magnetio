@@ -12,17 +12,21 @@ Torrent streaming engine and metadata proxy built with TypeScript, [Hono](https:
 - **Bun** 1.3+ — package manager.
 
 ### Installation
+
 ```bash
 bun install
 ```
 
 ### Run Development Server
+
 ```bash
 bun run dev
 ```
+
 Runs the server via `tsx` on **`http://localhost:3000`**.
 
 ### Configuration
+
 - `PORT` — server port (default `3000`).
 
 ---
@@ -30,8 +34,14 @@ Runs the server via `tsx` on **`http://localhost:3000`**.
 ## API Endpoints
 
 - `GET /` — API health check and endpoint list
-- `GET /metadata/:type/:id` — Fetch available torrent streams with magnet links from Torrentio; supports an optional `?filter=` query (e.g. `/metadata/movie/tt0133093`, `/metadata/series/tt0903747:1:1`)
-- `GET /stream/:infoHash` — Live HTTP 206 video stream with Range header seeking support; optional `?fileIdx=` to pick a specific file instead of the largest video, and `?magnet=` to pass a full magnet URI (with trackers)
+- `GET /metadata/:type/:id` — Fetch available torrent streams with magnet links from Torrentio (e.g. `/metadata/movie/tt0133093`, `/metadata/series/tt0903747:1:1`)
+- `GET /stream/:infoHash` — Live HTTP 206 video stream with Range header seeking support
+- `GET /user/profile` — Get authenticated user profile (requires `Authorization: Bearer <SUPABASE_JWT>`)
+- `GET /user/history` — Get watch history & playback progress
+- `POST /user/history` — Save/update playback progress (`currentTime`, `duration`, `completed`)
+- `GET /user/watchlist` — Get user's saved watchlist
+- `POST /user/watchlist` — Add movie/show to watchlist
+- `DELETE /user/watchlist/:mediaId` — Remove item from watchlist
 
 ### Streaming behavior
 
@@ -42,6 +52,17 @@ Runs the server via `tsx` on **`http://localhost:3000`**.
 
 ---
 
-## Docker
+## Database & Prisma (PostgreSQL / Supabase)
 
-Built from [`docker/backend.Dockerfile`](../docker/backend.Dockerfile) (Node 22 + Bun as package manager). With `docker compose up`, the API is published on port `3000`.
+1. Copy `.env.example` to `.env` and fill in your Supabase connection strings:
+   ```bash
+   cp .env.example .env
+   ```
+2. Push database schema to PostgreSQL:
+   ```bash
+   bun run db:push
+   ```
+3. Open Prisma Studio to browse/edit database records:
+   ```bash
+   bun run db:studio
+   ```

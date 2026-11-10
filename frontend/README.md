@@ -12,14 +12,17 @@ Minimalist web client and streaming video player for Magnetio built with [Next.j
 - **Bun** 1.3+ — package manager.
 
 ### Installation
+
 ```bash
 bun install
 ```
 
 ### Run Development Server
+
 ```bash
 bun run dev
 ```
+
 Runs the web app on **`http://localhost:3001`** (`next dev -H 0.0.0.0 -p 3001`).
 
 ### Configuration

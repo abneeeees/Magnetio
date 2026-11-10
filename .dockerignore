@@ -6,3 +6,5 @@
 **/coverage
 *.log
 .gitignore
+**/.env
+**/.env.*

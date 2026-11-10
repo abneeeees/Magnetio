@@ -1,7 +1,6 @@
 import { MediaItem, TorrentStream } from "@/types";
 
-export const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
+export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3000";
 
 const CINEMETA_TOP_MOVIES = "https://cinemeta-catalogs.strem.io/top/catalog/movie/top.json";
 const CINEMETA_TOP_SERIES = "https://cinemeta-catalogs.strem.io/top/catalog/series/top.json";
@@ -30,11 +29,16 @@ export async function fetchPopularMedia(type: "movie" | "series" = "movie"): Pro
   }
 }
 
-export async function searchMedia(query: string, type: "movie" | "series" = "movie"): Promise<MediaItem[]> {
+export async function searchMedia(
+  query: string,
+  type: "movie" | "series" = "movie",
+): Promise<MediaItem[]> {
   if (!query.trim()) return [];
 
   // Check if direct IMDb ID was provided
   const cleanQuery = query.trim();
+
+  // Check if direct IMDb ID was provided
   if (/^tt\d{7,8}$/.test(cleanQuery)) {
     try {
       const res = await fetch(`https://v3-cinemeta.strem.io/meta/${type}/${cleanQuery}.json`);
@@ -90,10 +94,9 @@ export async function fetchStreams(
   type: string,
   id: string,
   season?: number,
-  episode?: number
+  episode?: number,
 ): Promise<TorrentStream[]> {
-  const mediaId =
-    type === "series" && season && episode ? `${id}:${season}:${episode}` : id;
+  const mediaId = type === "series" && season && episode ? `${id}:${season}:${episode}` : id;
 
   const res = await fetch(`${BACKEND_URL}/metadata/${type}/${mediaId}`);
   if (!res.ok) {
@@ -118,4 +121,91 @@ export function buildStreamUrl(infoHash: string, _magnet?: string, fileIdx?: num
 
   const query = params.toString();
   return `${BACKEND_URL}/stream/${hash}${query ? `?${query}` : ""}`;
+}
+
+// Authenticated User API calls
+export async function fetchWatchHistory(token: string) {
+  const res = await fetch(`${BACKEND_URL}/user/history`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Failed to fetch watch history");
+  const data = await res.json();
+  return data.history || [];
+}
+
+export async function saveWatchProgress(
+  token: string,
+  progress: {
+    mediaId: string;
+    title: string;
+    mediaType?: string;
+    seasonNum?: number | null;
+    episodeNum?: number | null;
+    currentTime: number;
+    duration: number;
+    completed?: boolean;
+    posterUrl?: string | null;
+  },
+) {
+  const res = await fetch(`${BACKEND_URL}/user/history`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(progress),
+  });
+  if (!res.ok) throw new Error("Failed to save progress");
+  return res.json();
+}
+
+async function readApiError(res: Response, fallback: string): Promise<string> {
+  const data = await res.json().catch(() => ({}) as { error?: string });
+  return data.error || fallback;
+}
+
+export async function fetchWatchlist(token: string) {
+  const res = await fetch(`${BACKEND_URL}/user/watchlist`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to fetch watchlist"));
+  const data = await res.json();
+  return data.watchlist || [];
+}
+
+export async function addToWatchlist(
+  token: string,
+  item: {
+    mediaId: string;
+    title: string;
+    mediaType?: string;
+    posterUrl?: string | null;
+    releaseInfo?: string | null;
+  },
+) {
+  const res = await fetch(`${BACKEND_URL}/user/watchlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(item),
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to add to watchlist"));
+  return res.json();
+}
+
+export async function removeFromWatchlist(token: string, mediaId: string) {
+  const res = await fetch(`${BACKEND_URL}/user/watchlist/${encodeURIComponent(mediaId)}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error(await readApiError(res, "Failed to remove from watchlist"));
+  return res.json();
 }

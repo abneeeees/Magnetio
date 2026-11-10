@@ -1,19 +1,12 @@
 # Magnetio
 
-Magnetio is a **Self-hosting**, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser using sequential BitTorrent chunking and HTTP 206 Partial Content range requests.
+Magnetio is a lightweight, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser.
 
 ---
 
 ## Screenshots
-### Homepage
+
 <img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/87b5815e-cd83-4a68-bedc-c880e929ec5a" />
-
-### Global Search 
-<img width="1852" height="893" alt="image" src="https://github.com/user-attachments/assets/10b1ece8-26c4-49ec-866b-73c311333ee4" />
-
-### Streams
-<img width="766" height="1009" alt="image" src="https://github.com/user-attachments/assets/0c709cb9-4929-4d81-b106-d6aefc15ea82" />
-
 
 ---
 
@@ -24,8 +17,7 @@ Magnetio/
 ├── backend/   # Hono API + WebTorrent sequential streaming engine (Node.js runtime)
 ├── frontend/  # Next.js 16 web client + HTML5 streaming player (Tailwind CSS)
 ├── docker/    # backend.Dockerfile & frontend.Dockerfile
-├── docker-compose.yml
-└── .dockerignore
+└── docker-compose.yml
 ```
 
 ---
@@ -37,50 +29,65 @@ Magnetio/
 
 ---
 
-## Quick Start (local development)
+## Setup
 
-### 1. Start the Backend
+### Env variables
+
 ```bash
-cd backend
-bun install
+bun run backend:env && bun run frontend:env
+# Fill up the .env files
+```
+
+### Running Everything at once
+
+```bash
+bun install:all
 bun run dev
 ```
-Backend API runs at **`http://localhost:3000`** (override with the `PORT` env var).
 
-### 2. Start the Frontend
-```bash
-cd frontend
-bun install
-bun run dev
-```
-Frontend web UI runs at **`http://localhost:3001`**.
+Then open **`http://localhost:3001`** in the browser
 
-The frontend expects the backend at `http://localhost:3000` by default. Point it elsewhere with:
+### Running the Backend only
 
 ```bash
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3000 bun run dev
+bun run backend:dev
+# Backend API runs at http://localhost:3000
 ```
+
+### Running the Frontend only
+
+```bash
+bun run frontend:dev
+# Frontend web UI runs at http://localhost:3001
+```
+
+---
+
+## Code Quality
+
+Tooling lives at the repo root because `frontend/` and `backend/` share one git repo. Install the root dependencies once (this also registers the git hooks):
+
+| Command                | What it does                             |
+| ---------------------- | ---------------------------------------- |
+| `bun run format`       | Prettier write across both apps          |
+| `bun run format:check` | Verify formatting without changing files |
+| `bun run lint`         | ESLint in both apps                      |
+| `bun run typecheck`    | `tsc --noEmit` in both apps              |
 
 ---
 
 ## Run with Docker
 
 ```bash
+# Run
 sudo docker compose up -d --build
+
+#  Stop
+sudo docker compose down
 ```
 
 - Backend exposed on **`3000:3000`**
 - Frontend exposed on **`3001:3001`**
-
-Source directories are bind-mounted for live reload, while `node_modules` lives in named volumes. On SELinux-enforcing hosts (e.g. Fedora) the bind mounts use the `:z` label so containers can read/write them.
-
----
-
-## Tech Stack
-
-- **Backend**: Node.js, TypeScript, [Hono](https://hono.dev), [WebTorrent](https://webtorrent.io)
-- **Frontend**: [Next.js 16](https://nextjs.org), React 19, Tailwind CSS v4, Lucide Icons
-- **Stream Sources**: Torrentio Stremio Addon Protocol & Cinemeta Catalog
 
 ---
 

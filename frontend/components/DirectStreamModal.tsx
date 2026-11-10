@@ -9,10 +9,7 @@ interface DirectStreamModalProps {
   onPlayStream: (stream: TorrentStream, title: string) => void;
 }
 
-export function DirectStreamModal({
-  onClose,
-  onPlayStream,
-}: DirectStreamModalProps) {
+export function DirectStreamModal({ onClose, onPlayStream }: DirectStreamModalProps) {
   const [input, setInput] = useState("");
   const [fileIdx, setFileIdx] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +45,7 @@ export function DirectStreamModal({
         magnet,
         fileIdx: isNaN(idxNum as any) ? undefined : idxNum,
       },
-      `Direct Stream (${infoHash.slice(0, 8)}...)`
+      `Direct Stream (${infoHash.slice(0, 8)}...)`,
     );
     onClose();
   };
@@ -58,22 +55,22 @@ export function DirectStreamModal({
       <div className="relative w-full max-w-lg overflow-hidden rounded-xl border border-[#1f2537] bg-[#0f121a] shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#1b202e] bg-[#141824] px-6 py-4">
-          <div className="flex items-center gap-2 text-white font-semibold text-sm">
-            <Magnet className="h-4 w-4 text-red-500 rotate-45" />
+          <div className="flex items-center gap-2 text-sm font-semibold text-white">
+            <Magnet className="h-4 w-4 rotate-45 text-red-500" />
             Direct Stream
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-[#737c92] hover:bg-[#1f2639] hover:text-white transition-colors"
+            className="rounded-lg p-1.5 text-[#737c92] transition-colors hover:bg-[#1f2639] hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleStartStream} className="p-6 space-y-4">
+        <form onSubmit={handleStartStream} className="space-y-4 p-6">
           <div>
-            <label className="block text-xs font-medium text-[#8e97ab] mb-1.5">
+            <label className="mb-1.5 block text-xs font-medium text-[#8e97ab]">
               Magnet Link or 40-character InfoHash
             </label>
             <textarea
@@ -84,13 +81,14 @@ export function DirectStreamModal({
                 setError(null);
               }}
               placeholder="magnet:?xt=urn:btih:... or 03dd34fea0ff15a451c1723062a901aa3a0ad458"
-              className="w-full rounded-lg border border-[#22283a] bg-[#131722] p-3 text-xs text-white placeholder-[#5a6378] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/60 font-mono"
+              className="w-full rounded-lg border border-[#22283a] bg-[#131722] p-3 font-mono text-xs text-white placeholder-[#5a6378] focus:border-red-500/60 focus:ring-1 focus:ring-red-500/60 focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#8e97ab] mb-1.5">
-              File Index <span className="text-[#555d72]">(Optional — defaults to largest video file)</span>
+            <label className="mb-1.5 block text-xs font-medium text-[#8e97ab]">
+              File Index{" "}
+              <span className="text-[#555d72]">(Optional — defaults to largest video file)</span>
             </label>
             <input
               type="number"
@@ -98,7 +96,7 @@ export function DirectStreamModal({
               value={fileIdx}
               onChange={(e) => setFileIdx(e.target.value)}
               placeholder="e.g. 0 or 2"
-              className="w-full rounded-lg border border-[#22283a] bg-[#131722] px-3 py-2 text-xs text-white placeholder-[#5a6378] focus:border-red-500/60 focus:outline-none focus:ring-1 focus:ring-red-500/60 font-mono"
+              className="w-full rounded-lg border border-[#22283a] bg-[#131722] px-3 py-2 font-mono text-xs text-white placeholder-[#5a6378] focus:border-red-500/60 focus:ring-1 focus:ring-red-500/60 focus:outline-none"
             />
           </div>
 
@@ -114,7 +112,7 @@ export function DirectStreamModal({
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-5 py-2 text-xs font-semibold text-white hover:bg-red-500 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-500"
             >
               <Play className="h-3.5 w-3.5 fill-current" />
               Stream Now

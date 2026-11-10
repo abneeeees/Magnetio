@@ -2,34 +2,71 @@
 
 import React, { useRef, useState, useEffect } from "react";
 import { TorrentStream } from "@/types";
-import { buildStreamUrl } from "@/lib/api";
+import { buildStreamUrl, saveWatchProgress } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import { X, ExternalLink, Copy, Check, AlertCircle, RefreshCw } from "lucide-react";
+
+interface MediaContextInfo {
+  mediaId: string;
+  title: string;
+  mediaType?: string;
+  seasonNum?: number | null;
+  episodeNum?: number | null;
+  posterUrl?: string | null;
+  initialTime?: number;
+}
 
 interface VideoPlayerModalProps {
   stream: TorrentStream;
   title: string;
+  mediaInfo?: MediaContextInfo;
   onClose: () => void;
 }
 
-export function VideoPlayerModal({
-  stream,
-  title,
-  onClose,
-}: VideoPlayerModalProps) {
+export function VideoPlayerModal({ stream, title, mediaInfo, onClose }: VideoPlayerModalProps) {
+  const { token } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isBuffering, setIsBuffering] = useState(true);
 
-  const streamUrl = buildStreamUrl(
-    stream.infoHash,
-    stream.magnet,
-    stream.fileIdx
-  );
+  const streamUrl = buildStreamUrl(stream.infoHash, stream.magnet, stream.fileIdx);
+
+  // Sync watch progress to backend
+  const syncProgress = () => {
+    if (!token || !mediaInfo || !videoRef.current) return;
+    const currentTime = videoRef.current.currentTime;
+    const duration = videoRef.current.duration || 0;
+    if (currentTime > 0) {
+      saveWatchProgress(token, {
+        mediaId: mediaInfo.mediaId,
+        title: mediaInfo.title,
+        mediaType: mediaInfo.mediaType || "movie",
+        seasonNum: mediaInfo.seasonNum,
+        episodeNum: mediaInfo.episodeNum,
+        currentTime,
+        duration,
+        completed: duration > 0 && currentTime / duration > 0.9,
+        posterUrl: mediaInfo.posterUrl,
+      }).catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    // Sync progress periodically every 15 seconds
+    const interval = setInterval(syncProgress, 15000);
+    return () => {
+      clearInterval(interval);
+      syncProgress();
+    };
+  }, [token, mediaInfo]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        syncProgress();
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -55,8 +92,8 @@ export function VideoPlayerModal({
       {/* Top Header Bar */}
       <div className="flex items-center justify-between border-b border-[#1f2434] bg-[#0c0e14] px-4 py-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <h1 className="text-sm font-semibold text-white truncate max-w-md sm:max-w-xl">
+          <span className="flex h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-500" />
+          <h1 className="max-w-md truncate text-sm font-semibold text-white sm:max-w-xl">
             {title}
           </h1>
         </div>
@@ -64,7 +101,7 @@ export function VideoPlayerModal({
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyMagnet}
-            className="flex items-center gap-1.5 rounded-lg border border-[#22293d] bg-[#141824] px-2.5 py-1.5 text-xs text-[#8d97ac] hover:text-white hover:border-[#323c56] transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-[#22293d] bg-[#141824] px-2.5 py-1.5 text-xs text-[#8d97ac] transition-colors hover:border-[#323c56] hover:text-white"
             title="Copy Magnet Link"
           >
             {copied ? (
@@ -84,7 +121,7 @@ export function VideoPlayerModal({
             href={streamUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg border border-[#22293d] bg-[#141824] px-2.5 py-1.5 text-xs text-[#8d97ac] hover:text-white hover:border-[#323c56] transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-[#22293d] bg-[#141824] px-2.5 py-1.5 text-xs text-[#8d97ac] transition-colors hover:border-[#323c56] hover:text-white"
             title="Open stream in new tab / VLC"
           >
             <ExternalLink className="h-3.5 w-3.5" />
@@ -93,7 +130,7 @@ export function VideoPlayerModal({
 
           <button
             onClick={onClose}
-            className="rounded-lg bg-[#1a1f2e] p-1.5 text-[#8d97ac] hover:bg-red-600 hover:text-white transition-colors"
+            className="rounded-lg bg-[#1a1f2e] p-1.5 text-[#8d97ac] transition-colors hover:bg-red-600 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
@@ -108,7 +145,7 @@ export function VideoPlayerModal({
           controls
           autoPlay
           playsInline
-          className="h-full w-full max-h-[calc(100vh-60px)] object-contain"
+          className="h-full max-h-[calc(100vh-60px)] w-full object-contain"
           onWaiting={() => setIsBuffering(true)}
           onPlaying={() => {
             setIsBuffering(false);
@@ -118,19 +155,19 @@ export function VideoPlayerModal({
           onError={() => {
             setIsBuffering(false);
             setError(
-              "Unable to play video stream. The torrent may still be connecting to peers or the format requires transcoding."
+              "Unable to play video stream. The torrent may still be connecting to peers or the format requires transcoding.",
             );
           }}
         />
 
         {/* Buffering Indicator */}
         {isBuffering && !error && (
-          <div className="pointer-events-none absolute flex flex-col items-center justify-center rounded-xl bg-black/75 px-6 py-4 backdrop-blur-sm border border-[#22293d]">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent mb-3" />
+          <div className="pointer-events-none absolute flex flex-col items-center justify-center rounded-xl border border-[#22293d] bg-black/75 px-6 py-4 backdrop-blur-sm">
+            <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
             <span className="text-xs font-medium text-white">
               Buffering torrent stream from peers...
             </span>
-            <span className="text-[10px] text-[#788298] mt-1">
+            <span className="mt-1 text-[10px] text-[#788298]">
               Initial piece download takes a few seconds
             </span>
           </div>
@@ -140,8 +177,8 @@ export function VideoPlayerModal({
         {error && (
           <div className="absolute max-w-md rounded-xl border border-red-500/30 bg-[#140b0e]/95 p-6 text-center backdrop-blur-md">
             <AlertCircle className="mx-auto mb-3 h-8 w-8 text-red-400" />
-            <h3 className="text-sm font-semibold text-white mb-1">Playback Error</h3>
-            <p className="text-xs text-[#a87f87] mb-4">{error}</p>
+            <h3 className="mb-1 text-sm font-semibold text-white">Playback Error</h3>
+            <p className="mb-4 text-xs text-[#a87f87]">{error}</p>
             <div className="flex justify-center gap-3">
               <button
                 onClick={handleRetry}

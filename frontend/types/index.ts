@@ -27,6 +27,7 @@ export interface ParsedStreamInfo {
   rawTitle: string;
 }
 
+// cleans the title part of the torrent metadata to extract useful info
 export function parseStreamTitle(title: string): ParsedStreamInfo {
   const lines = title.split("\n").map((l) => l.trim());
   const header = lines[0] || "";
@@ -34,7 +35,12 @@ export function parseStreamTitle(title: string): ParsedStreamInfo {
 
   // Extract quality
   let quality = "HD";
-  if (header.includes("2160p") || header.includes("4k") || header.includes("4K") || header.includes("UHD")) {
+  if (
+    header.includes("2160p") ||
+    header.includes("4k") ||
+    header.includes("4K") ||
+    header.includes("UHD")
+  ) {
     quality = "4K";
   } else if (header.includes("1080p") || header.includes("FHD")) {
     quality = "1080p";

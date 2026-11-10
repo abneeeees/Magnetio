@@ -1,0 +1,5 @@
+.vscode
+
+# Root tooling (Prettier, Husky, lint-staged)
+/node_modules
+/.husky/_

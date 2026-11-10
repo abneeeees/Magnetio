@@ -1,13 +1,28 @@
 "use client";
 
 import React, { useState } from "react";
-import { Film, Tv, Play, Search, Magnet, X } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import {
+  Film,
+  Tv,
+  Play,
+  Search,
+  Magnet,
+  X,
+  Bookmark,
+  History,
+  User as UserIcon,
+  LogOut,
+} from "lucide-react";
+
+export type NavTab = "movie" | "series" | "watchlist" | "history";
 
 interface NavbarProps {
-  activeTab: "movie" | "series";
-  onTabChange: (tab: "movie" | "series") => void;
+  activeTab: NavTab;
+  onTabChange: (tab: NavTab) => void;
   onSearch: (query: string) => void;
   onOpenDirectStream: () => void;
+  onOpenAuth: () => void;
 }
 
 export function Navbar({
@@ -15,8 +30,11 @@ export function Navbar({
   onTabChange,
   onSearch,
   onOpenDirectStream,
+  onOpenAuth,
 }: NavbarProps) {
+  const { user, signOut } = useAuth();
   const [searchInput, setSearchInput] = useState("");
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,17 +51,20 @@ export function Navbar({
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         {/* Brand Logo */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/10 text-red-500 border border-red-500/20">
-              <Magnet className="h-5 w-5 rotate-45" />
+          <div
+            onClick={() => onTabChange("movie")}
+            className="flex cursor-pointer items-center gap-2"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-500/20 bg-red-600/10 text-red-500">
+              <Magnet className="rotate-45" />
             </div>
             <span className="font-mono text-lg font-bold tracking-tight text-white">
               Magnet<span className="text-red-500">io</span>
             </span>
           </div>
 
-          {/* Catalog Type Switcher */}
-          <nav className="hidden items-center gap-1 sm:flex rounded-lg bg-[#141722] p-1 border border-[#1f2434]">
+          {/* Catalog & Library Switcher */}
+          <nav className="hidden items-center gap-1 rounded-lg border border-[#1f2434] bg-[#141722] p-1 sm:flex">
             <button
               onClick={() => onTabChange("movie")}
               className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
@@ -66,25 +87,51 @@ export function Navbar({
               <Tv className="h-3.5 w-3.5" />
               Series
             </button>
+            {user && (
+              <>
+                <button
+                  onClick={() => onTabChange("watchlist")}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    activeTab === "watchlist"
+                      ? "bg-[#252b3d] text-white shadow-sm"
+                      : "text-[#8e95a5] hover:text-white"
+                  }`}
+                >
+                  <Bookmark className="h-3.5 w-3.5" />
+                  Watchlist
+                </button>
+                <button
+                  onClick={() => onTabChange("history")}
+                  className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                    activeTab === "history"
+                      ? "bg-[#252b3d] text-white shadow-sm"
+                      : "text-[#8e95a5] hover:text-white"
+                  }`}
+                >
+                  <History className="h-3.5 w-3.5" />
+                  History
+                </button>
+              </>
+            )}
           </nav>
         </div>
 
         {/* Search Bar */}
-        <form onSubmit={handleSubmit} className="relative flex-1 max-w-md">
+        <form onSubmit={handleSubmit} className="relative max-w-md flex-1">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#656d81]" />
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#656d81]" />
             <input
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search movies, shows, or paste IMDb ID (tt0133093)..."
-              className="w-full rounded-lg border border-[#1f2434] bg-[#141722] py-2 pl-9 pr-8 text-xs text-[#e6e8ec] placeholder-[#656d81] focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/50"
+              className="w-full rounded-lg border border-[#1f2434] bg-[#141722] py-2 pr-8 pl-9 text-xs text-[#e6e8ec] placeholder-[#656d81] focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 focus:outline-none"
             />
             {searchInput && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#656d81] hover:text-white"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-[#656d81] hover:text-white"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -92,23 +139,83 @@ export function Navbar({
           </div>
         </form>
 
-        {/* Action Button: Direct Magnet Stream */}
+        {/* Action Buttons: Direct Magnet & Auth */}
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenDirectStream}
-            className="flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-red-500 active:scale-95"
+            className="flex items-center gap-1.5 rounded-lg border border-[#22283b] bg-[#141724] px-3 py-2 text-xs font-medium text-[#c4cad7] transition-colors hover:border-[#333d56] hover:text-white"
           >
-            <Play className="h-3.5 w-3.5 fill-current" />
+            <Play className="h-3.5 w-3.5 fill-current text-red-500" />
             <span className="hidden sm:inline">Direct Magnet</span>
           </button>
+
+          {user ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-2 rounded-lg border border-[#22283b] bg-[#141724] px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-[#1a1f30]"
+              >
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600/20 text-[10px] font-bold text-red-400">
+                  {user.email?.[0].toUpperCase() || "U"}
+                </div>
+                <span className="hidden max-w-[100px] truncate text-xs md:inline">
+                  {user.user_metadata?.full_name || user.email?.split("@")[0]}
+                </span>
+              </button>
+
+              {userDropdownOpen && (
+                <div className="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-[#1f2537] bg-[#10131d] py-1 shadow-2xl">
+                  <div className="truncate border-b border-[#1b202e] px-3 py-2 text-[11px] text-[#717b92]">
+                    {user.email}
+                  </div>
+                  <button
+                    onClick={() => {
+                      onTabChange("watchlist");
+                      setUserDropdownOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-xs text-[#c4cad7] hover:bg-[#191e2c] hover:text-white"
+                  >
+                    <Bookmark className="h-3.5 w-3.5" /> Watchlist
+                  </button>
+                  <button
+                    onClick={() => {
+                      onTabChange("history");
+                      setUserDropdownOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-xs text-[#c4cad7] hover:bg-[#191e2c] hover:text-white"
+                  >
+                    <History className="h-3.5 w-3.5" /> History
+                  </button>
+                  <div className="my-1 border-t border-[#1b202e]" />
+                  <button
+                    onClick={() => {
+                      signOut();
+                      setUserDropdownOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-500/10"
+                  >
+                    <LogOut className="h-3.5 w-3.5" /> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-red-500 active:scale-95"
+            >
+              <UserIcon className="h-3.5 w-3.5" />
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mobile Submenu for Tabs */}
-      <div className="flex border-t border-[#1b1f2b] px-4 py-2 sm:hidden justify-center gap-2">
+      <div className="flex justify-center gap-1.5 overflow-x-auto border-t border-[#1b1f2b] px-4 py-2 sm:hidden">
         <button
           onClick={() => onTabChange("movie")}
-          className={`flex-1 flex justify-center items-center gap-1.5 rounded-md py-1.5 text-xs font-medium ${
+          className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
             activeTab === "movie" ? "bg-[#1f2434] text-white" : "text-[#8e95a5]"
           }`}
         >
@@ -116,12 +223,32 @@ export function Navbar({
         </button>
         <button
           onClick={() => onTabChange("series")}
-          className={`flex-1 flex justify-center items-center gap-1.5 rounded-md py-1.5 text-xs font-medium ${
+          className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
             activeTab === "series" ? "bg-[#1f2434] text-white" : "text-[#8e95a5]"
           }`}
         >
           <Tv className="h-3.5 w-3.5" /> Series
         </button>
+        {user && (
+          <>
+            <button
+              onClick={() => onTabChange("watchlist")}
+              className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
+                activeTab === "watchlist" ? "bg-[#1f2434] text-white" : "text-[#8e95a5]"
+              }`}
+            >
+              <Bookmark className="h-3.5 w-3.5" /> Watchlist
+            </button>
+            <button
+              onClick={() => onTabChange("history")}
+              className={`flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ${
+                activeTab === "history" ? "bg-[#1f2434] text-white" : "text-[#8e95a5]"
+              }`}
+            >
+              <History className="h-3.5 w-3.5" /> History
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

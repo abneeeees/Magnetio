@@ -1,0 +1,24 @@
+{
+  "name": "magnetio",
+  "private": true,
+  "packageManager": "bun@1.3.10",
+  "scripts": {
+    "prepare": "husky",
+    "frontend:dev": "cd frontend && bun install && bun run dev",
+    "backend:dev": "cd backend && bun install && bun run dev",
+    "backend:env": "cp backend/.env.example backend/.env",
+    "frontend:env": "cp frontend/.env.example frontend/.env",
+    "dev": "bun run --parallel backend:dev frontend:dev",
+    "install:all": "bun install --cwd frontend && bun install --cwd backend",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "bun run --cwd=frontend lint && bun run --cwd=backend lint",
+    "typecheck": "bun run --cwd=frontend typecheck && bun run --cwd=backend typecheck"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1"
+  }
+}

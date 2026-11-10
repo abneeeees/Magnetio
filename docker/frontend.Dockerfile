@@ -1,14 +1,18 @@
-FROM node:22-slim
+FROM oven/bun:1
 
 WORKDIR /app
 
+# Copy dependency files
 COPY frontend/package.json frontend/bun.lock ./
 
-RUN npm install -g bun@1.3.10
-RUN bun install
+# Install dependencies
+RUN bun install --frozen-lockfile
 
+# Copy application source
 COPY frontend/ .
 
-EXPOSE 3001
+# Next.js default port
+EXPOSE 3000
 
+# Start production server
 CMD ["bun", "run", "dev"]
