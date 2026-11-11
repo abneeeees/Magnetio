@@ -315,7 +315,7 @@ export function StreamSelectorModal({
                       {episodesForSeason.length > 0
                         ? episodesForSeason.map((ep) => (
                             <option key={ep.episodeNumber} value={ep.episodeNumber}>
-                              Episode {ep.episodeNumber} — {ep.name}
+                              Episode {ep.episodeNumber} : {ep.name}
                             </option>
                           ))
                         : Array.from({ length: 100 }, (_, i) => i + 1).map((ep) => (
