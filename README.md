@@ -1,13 +1,15 @@
 <p align="center">
-  <img src="assets/logo.png" alt="Magnetio logo" width="96" />
+  <img src="assets/logo.png" alt="MagnetIO logo" width="96" />
 </p>
 
-<h1 align="center">Magnetio</h1>
+<h1 align="center" style="font-family: monospace; font-size: 1.125rem; font-weight: bold; letter-spacing: -0.025em; color: white;">
+  Magnet<span style="color: red;">IO</span>
+</h1>
 
-<p align="center">Magnetio is a lightweight, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser.</p>
+<p align="center">MagnetIO is a lightweight, peer-to-peer web media streaming platform for movies and TV series. It resolves torrent streams via Torrentio and streams video directly to the browser.</p>
 
 <p align="center">
-  <img src="assets/magnetio.png" alt="Magnetio logo" width="741" />
+  <img src="assets/magnetio.png" alt="MagnetIO logo" width="741" />
 </p>
 
 ---
@@ -15,7 +17,7 @@
 ## Project Structure
 
 ```text
-Magnetio/
+MagnetIO/
 ├── backend/   # Hono API + WebTorrent sequential streaming engine (Node.js runtime)
 ├── frontend/  # Next.js 16 web client + HTML5 streaming player (Tailwind CSS)
 ├── docker/    # backend.Dockerfile & frontend.Dockerfile
