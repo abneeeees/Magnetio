@@ -123,6 +123,9 @@ export function Navbar({
             >
               <Film className="h-3.5 w-3.5" />
               Movies
+              <kbd className="ml-1 inline-flex h-[19px] min-w-[19px] items-center justify-center rounded-[5px] border border-white/[0.12] bg-[#191d2a] px-1 text-[10px] leading-none font-bold text-[#aeb4c3] shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                M
+              </kbd>
             </button>
             <button
               onClick={() => onTabChange("series")}
@@ -134,6 +137,9 @@ export function Navbar({
             >
               <Tv className="h-3.5 w-3.5" />
               Series
+              <kbd className="ml-1 inline-flex h-[19px] min-w-[19px] items-center justify-center rounded-[5px] border border-white/[0.12] bg-[#191d2a] px-1 text-[10px] leading-none font-medium text-[#aeb4c3] shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                S
+              </kbd>
             </button>
             {user && (
               <>
@@ -147,6 +153,9 @@ export function Navbar({
                 >
                   <Bookmark className="h-3.5 w-3.5" />
                   Watchlist
+                  <kbd className="ml-1 inline-flex h-[19px] min-w-[19px] items-center justify-center rounded-[5px] border border-white/[0.12] bg-[#191d2a] px-1 text-[10px] leading-none font-medium text-[#aeb4c3] shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                    W
+                  </kbd>
                 </button>
                 <button
                   onClick={() => onTabChange("history")}
@@ -158,6 +167,9 @@ export function Navbar({
                 >
                   <History className="h-3.5 w-3.5" />
                   History
+                  <kbd className="ml-1 inline-flex h-[19px] min-w-[19px] items-center justify-center rounded-[5px] border border-white/[0.12] bg-[#191d2a] px-1 text-[10px] leading-none font-medium text-[#aeb4c3] shadow-[0_1px_2px_rgba(0,0,0,0.4)]">
+                    H
+                  </kbd>
                 </button>
               </>
             )}
