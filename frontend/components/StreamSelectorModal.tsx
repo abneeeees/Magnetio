@@ -67,7 +67,7 @@ export function StreamSelectorModal({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [selectedQuality, setSelectedQuality] = useState<string | null>(null);
+  const [selectedQuality, setSelectedQuality] = useState<string | null>("1080p");
   const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
   const [watchlistError, setWatchlistError] = useState<string | null>(null);
 
@@ -77,7 +77,7 @@ export function StreamSelectorModal({
     .map((stream, index) => ({ stream, index, info: parseStreamTitle(stream.title) }))
     .filter(({ info }) => {
       if (Number(info.seeders) <= 50 || !Number.isFinite(Number(info.seeders))) return false;
-      if (!selectedQuality) return true;
+      if (!selectedQuality) return info.quality === "1080p";
       if (selectedQuality === "HD") return info.quality === "HD" || info.quality === "480p";
       return info.quality === selectedQuality;
     });
