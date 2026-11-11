@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   Film,
@@ -41,10 +41,58 @@ export function Navbar({
     onSearch(searchInput);
   };
 
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // ctrl k or cmd k
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+
+      // [/] shortcut
+      if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName) &&
+        !(e.target as HTMLElement).isContentEditable
+      ) {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+
+      if (e.key === "Escape") {
+        searchRef.current?.blur();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const handleClear = () => {
     setSearchInput("");
     onSearch("");
   };
+
+  const SearchSkeleton = () => (
+    <div className="animate-pulse space-y-3">
+      {[1, 2, 3].map((item) => (
+        <div key={item} className="flex gap-3">
+          <div className="h-20 w-14 rounded-md bg-[#252a38]" />
+
+          <div className="flex-1 space-y-2 py-2">
+            <div className="h-3 w-3/4 rounded bg-[#252a38]" />
+            <div className="h-3 w-1/2 rounded bg-[#252a38]" />
+            <div className="h-3 w-1/4 rounded bg-[#252a38]" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <header className="sticky top-0 z-30 border-b border-[#1b1f2b] bg-[#0b0c10]/90 backdrop-blur-md">
@@ -59,7 +107,7 @@ export function Navbar({
               <Magnet className="rotate-45" />
             </div>
             <span className="font-mono text-lg font-bold tracking-tight text-white">
-              Magnet<span className="text-red-500">io</span>
+              Magnet<span className="text-red-500">IO</span>
             </span>
           </div>
 
@@ -121,10 +169,11 @@ export function Navbar({
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#656d81]" />
             <input
+              ref={searchRef}
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search movies, shows, or paste IMDb ID (tt0133093)..."
+              placeholder="Press Ctrl + K, ⌘ + K, or / to search"
               className="w-full rounded-lg border border-[#1f2434] bg-[#141722] py-2 pr-8 pl-9 text-xs text-[#e6e8ec] placeholder-[#656d81] focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 focus:outline-none"
             />
             {searchInput && (
