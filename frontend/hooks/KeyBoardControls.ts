@@ -32,3 +32,20 @@ export function tabChange(callback: (key: string) => void, enabled = true) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [callback, enabled]);
 }
+
+export function directMagnet(callback: () => void, enabled = true) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+
+      if (key === "d") {
+        callback();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [callback, enabled]);
+}

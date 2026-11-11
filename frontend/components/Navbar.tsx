@@ -204,10 +204,13 @@ export function Navbar({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenDirectStream}
-            className="flex items-center gap-1.5 rounded-lg border border-[#22283b] bg-[#141724] px-3 py-2 text-xs font-medium text-[#c4cad7] transition-colors hover:border-[#333d56] hover:text-white"
+            className="flex items-center gap-1.5 rounded-md border border-[#22283b] bg-[#141724] px-3 py-1.5 text-xs font-medium text-[#c4cad7] transition-colors hover:border-[#333d56] hover:text-white"
           >
-            <Play className="h-3.5 w-3.5 fill-current text-red-500" />
+            <Magnet className="h-3.5 w-3.5 fill-current text-red-500" />
             <span className="hidden sm:inline">Direct Magnet</span>
+            <kbd className="ml-1 hidden h-[19px] min-w-[19px] items-center justify-center rounded-[5px] border border-white/[0.12] bg-[#191d2a] px-1 text-[10px] leading-none font-medium text-[#aeb4c3] shadow-[0_1px_2px_rgba(0,0,0,0.4)] sm:inline-flex">
+              D
+            </kbd>
           </button>
 
           {user ? (

@@ -18,7 +18,7 @@ import { StreamSelectorModal } from "@/components/StreamSelectorModal";
 import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { DirectStreamModal } from "@/components/DirectStreamModal";
 import { AuthModal } from "@/components/AuthModal";
-import { tabChange, useEscapeKey } from "@/hooks/KeyBoardControls";
+import { directMagnet, tabChange, useEscapeKey } from "@/hooks/KeyBoardControls";
 import { Loader2, Film, Tv, Sparkles, Bookmark, History, Play, Clock } from "lucide-react";
 
 export default function HomePage() {
@@ -64,6 +64,10 @@ export default function HomePage() {
         setActiveTab("history");
         break;
     }
+  });
+
+  directMagnet(() => {
+    setShowDirectStream(true);
   });
 
   const mapWatchlistItems = (list: any[]): MediaItem[] =>
