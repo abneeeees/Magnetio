@@ -203,9 +203,6 @@ export function StreamSelectorModal({
         {/* Header */}
         <div className="relative flex items-center justify-between gap-2 border-b border-[#1b202e] bg-[#141824] px-3 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            {/* <span className="rounded bg-red-600/10 px-2 py-0.5 text-xs font-mono font-semibold uppercase text-red-400 border border-red-500/20">
-              {item.type}
-            </span> */}
             <h2 className="line-clamp-1 min-w-0 text-sm font-semibold text-white sm:text-base">
               {item.name} {item.releaseInfo ? `(${item.releaseInfo})` : ""}
             </h2>
@@ -287,12 +284,6 @@ export function StreamSelectorModal({
                 <div className="grid grid-cols-2 gap-3">
                   {/* Season Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="season-select"
-                      className="text-[11px] font-medium tracking-wide text-[#737c92] uppercase"
-                    >
-                      Season
-                    </label>
                     <select
                       id="season-select"
                       value={season}
@@ -315,12 +306,6 @@ export function StreamSelectorModal({
 
                   {/* Episode Selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="episode-select"
-                      className="text-[11px] font-medium tracking-wide text-[#737c92] uppercase"
-                    >
-                      Episode
-                    </label>
                     <select
                       id="episode-select"
                       value={episode}

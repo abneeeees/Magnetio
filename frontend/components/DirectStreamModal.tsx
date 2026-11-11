@@ -85,21 +85,6 @@ export function DirectStreamModal({ onClose, onPlayStream }: DirectStreamModalPr
             />
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-xs font-medium text-[#8e97ab]">
-              File Index{" "}
-              <span className="text-[#555d72]">(Optional — defaults to largest video file)</span>
-            </label>
-            <input
-              type="number"
-              min={0}
-              value={fileIdx}
-              onChange={(e) => setFileIdx(e.target.value)}
-              placeholder="e.g. 0 or 2"
-              className="w-full rounded-lg border border-[#22283a] bg-[#131722] px-3 py-2 font-mono text-xs text-white placeholder-[#5a6378] focus:border-red-500/60 focus:ring-1 focus:ring-red-500/60 focus:outline-none"
-            />
-          </div>
-
           {error && <p className="text-xs text-red-400">{error}</p>}
 
           <div className="flex justify-end gap-3 pt-2">
