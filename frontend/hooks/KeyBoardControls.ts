@@ -1,6 +1,30 @@
 import { useEffect } from "react";
 
-export function useEscapeKey(callback: () => void, enabled: boolean = true) {
+export function useSearchBar(callback: (key: string) => void, enabled = true) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      const target = e.target as HTMLElement;
+
+      const isInput = ["INPUT", "TEXTAREA"].includes(target.tagName) || target.isContentEditable;
+
+      if (((e.ctrlKey || e.metaKey) && key === "k") || (key === "/" && !isInput)) {
+        e.preventDefault();
+        callback(key);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [callback, enabled]);
+}
+
+export function useEscapeKey(callback: () => void, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
 
@@ -16,36 +40,25 @@ export function useEscapeKey(callback: () => void, enabled: boolean = true) {
   }, [callback, enabled]);
 }
 
-export function tabChange(callback: (key: string) => void, enabled = true) {
+export function useTabChange(callback: (key: string) => void, enabled = true) {
   useEffect(() => {
     if (!enabled) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
+      const target = e.target as HTMLElement;
 
-      if (["m", "s", "w", "h"].includes(key)) {
+      if (["INPUT", "TEXTAREA"].includes(target.tagName) || target.isContentEditable) return;
+
+      if (["m", "s", "w", "h", "d"].includes(key)) {
         callback(key);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [callback, enabled]);
-}
 
-export function directMagnet(callback: () => void, enabled = true) {
-  useEffect(() => {
-    if (!enabled) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-
-      if (key === "d") {
-        callback();
-      }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [callback, enabled]);
 }

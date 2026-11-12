@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, use } from "react";
 import Image from "next/image";
 import { MediaItem, TorrentStream } from "@/types";
 import {
@@ -18,7 +18,7 @@ import { StreamSelectorModal } from "@/components/StreamSelectorModal";
 import { VideoPlayerModal } from "@/components/VideoPlayerModal";
 import { DirectStreamModal } from "@/components/DirectStreamModal";
 import { AuthModal } from "@/components/AuthModal";
-import { directMagnet, tabChange, useEscapeKey } from "@/hooks/KeyBoardControls";
+import { useTabChange, useEscapeKey } from "@/hooks/KeyBoardControls";
 import { Loader2, Film, Tv, Sparkles, Bookmark, History, Play, Clock } from "lucide-react";
 
 export default function HomePage() {
@@ -46,10 +46,9 @@ export default function HomePage() {
     setSelectedItem(null);
     setActiveStream(null);
     setShowAuthModal(false);
-    setActiveTab("movie");
   });
 
-  tabChange((key) => {
+  useTabChange((key) => {
     switch (key) {
       case "m":
         setActiveTab("movie");
@@ -57,6 +56,14 @@ export default function HomePage() {
       case "s":
         setActiveTab("series");
         break;
+      case "d":
+        setShowDirectStream(true);
+        break;
+    }
+  });
+
+  useTabChange((key) => {
+    switch (key) {
       case "w":
         setActiveTab("watchlist");
         break;
@@ -64,11 +71,7 @@ export default function HomePage() {
         setActiveTab("history");
         break;
     }
-  });
-
-  directMagnet(() => {
-    setShowDirectStream(true);
-  });
+  }, !!token);
 
   const mapWatchlistItems = (list: any[]): MediaItem[] =>
     list.map((item: any) => ({
