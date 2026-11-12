@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { searchBar, useEscapeKey } from "@/hooks/KeyBoardControls";
+import { useSearchBar, useEscapeKey } from "@/hooks/KeyBoardControls";
 import {
   Film,
   Tv,
@@ -44,7 +44,7 @@ export function Navbar({
 
   const searchRef = useRef<HTMLInputElement>(null);
 
-  searchBar((key) => {
+  useSearchBar((key) => {
     switch (key) {
       case "k":
         searchRef.current?.focus();
