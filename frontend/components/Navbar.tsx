@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { searchBar, useEscapeKey } from "@/hooks/KeyBoardControls";
 import {
   Film,
   Tv,
@@ -43,35 +44,20 @@ export function Navbar({
 
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    // ctrl k or cmd k
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
+  searchBar((key) => {
+    switch (key) {
+      case "k":
         searchRef.current?.focus();
-      }
-
-      // [/] shortcut
-      if (
-        e.key === "/" &&
-        !["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName) &&
-        !(e.target as HTMLElement).isContentEditable
-      ) {
-        e.preventDefault();
+        break;
+      case "/":
         searchRef.current?.focus();
-      }
+        break;
+    }
+  });
 
-      if (e.key === "Escape") {
-        searchRef.current?.blur();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  useEscapeKey(() => {
+    searchRef.current?.blur();
+  });
 
   const handleClear = () => {
     setSearchInput("");

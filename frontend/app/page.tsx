@@ -46,7 +46,6 @@ export default function HomePage() {
     setSelectedItem(null);
     setActiveStream(null);
     setShowAuthModal(false);
-    setActiveTab("movie");
   });
 
   tabChange((key) => {
